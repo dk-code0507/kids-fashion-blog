@@ -1,0 +1,168 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const reviews = (await getCollection('reviews')).sort(
+	(a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const guides = (await getCollection('guides')).sort(
+	(a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<!doctype html>
+<html lang="ja">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			main {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: 2em auto;
+				padding: 0 1em;
+			}
+			.hero {
+				text-align: center;
+				padding: 2em 0;
+				border-bottom: 1px solid #eee;
+				margin-bottom: 2em;
+			}
+			.hero h1 {
+				font-size: 1.8em;
+				margin-bottom: 0.5em;
+			}
+			.hero p {
+				color: #666;
+			}
+			.section-title {
+				font-size: 1.3em;
+				font-weight: bold;
+				margin: 2em 0 1em;
+				padding-left: 0.6em;
+				border-left: 4px solid #f5a623;
+			}
+			.card-list {
+				list-style: none;
+				padding: 0;
+				display: grid;
+				gap: 1em;
+			}
+			.card {
+				border: 1px solid #e8e8e8;
+				border-radius: 8px;
+				padding: 1em 1.2em;
+				transition: box-shadow 0.2s;
+			}
+			.card:hover {
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			}
+			.card a {
+				text-decoration: none;
+				color: inherit;
+			}
+			.card-meta {
+				font-size: 0.8em;
+				color: #999;
+				margin-bottom: 0.3em;
+			}
+			.card-title {
+				font-size: 1em;
+				font-weight: bold;
+				margin: 0 0 0.3em;
+			}
+			.card-tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.3em;
+				margin-top: 0.5em;
+			}
+			.tag {
+				background: #f0f0f0;
+				border-radius: 4px;
+				padding: 0.1em 0.5em;
+				font-size: 0.75em;
+				color: #555;
+			}
+			.rating {
+				color: #f5a623;
+				font-size: 0.85em;
+			}
+			.empty {
+				color: #aaa;
+				font-style: italic;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<h1>こどもふく図鑑</h1>
+				<p>1〜3歳の子ども服を実際に着せて正直レビュー。<br />サイズ・素材・コスパ、パパ・ママが知りたいことを全部まとめました。</p>
+			</section>
+
+			<h2 class="section-title">最新レビュー</h2>
+			{
+				reviews.length === 0 ? (
+					<p class="empty">レビュー記事はまだありません。</p>
+				) : (
+					<ul class="card-list">
+						{reviews.slice(0, 5).map((post) => (
+							<li class="card">
+								<a href={`/reviews/${post.id}/`}>
+									<div class="card-meta">
+										{post.data.category} &nbsp;·&nbsp;
+										{post.data.date.toLocaleDateString('ja-JP')}
+										{post.data.rating && (
+											<span class="rating"> ★{post.data.rating}</span>
+										)}
+									</div>
+									<p class="card-title">{post.data.title}</p>
+									{post.data.tags.length > 0 && (
+										<div class="card-tags">
+											{post.data.tags.map((tag) => (
+												<span class="tag">{tag}</span>
+											))}
+										</div>
+									)}
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+
+			<h2 class="section-title">お悩み解決ガイド</h2>
+			{
+				guides.length === 0 ? (
+					<p class="empty">ガイド記事はまだありません。</p>
+				) : (
+					<ul class="card-list">
+						{guides.slice(0, 5).map((post) => (
+							<li class="card">
+								<a href={`/guides/${post.id}/`}>
+									<div class="card-meta">
+										{post.data.category} &nbsp;·&nbsp;
+										{post.data.date.toLocaleDateString('ja-JP')}
+									</div>
+									<p class="card-title">{post.data.title}</p>
+									{post.data.tags.length > 0 && (
+										<div class="card-tags">
+											{post.data.tags.map((tag) => (
+												<span class="tag">{tag}</span>
+											))}
+										</div>
+									)}
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</main>
+		<Footer />
+	</body>
+</html>

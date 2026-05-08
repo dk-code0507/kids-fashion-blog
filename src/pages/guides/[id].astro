@@ -1,0 +1,102 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('guides');
+	return posts.map((post) => ({ params: { id: post.id }, props: post }));
+}
+
+const post = Astro.props;
+const { Content } = await render(post);
+const { title, description, date, updated, category, tags } = post.data;
+---
+
+<html lang="ja">
+	<head>
+		<BaseHead title={title} description={description ?? title} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.title {
+				margin-bottom: 1.5em;
+				padding: 1em 0;
+				border-bottom: 1px solid #eee;
+			}
+			.title h1 {
+				font-size: 1.6em;
+				margin: 0.5em 0;
+				line-height: 1.4;
+			}
+			.meta {
+				font-size: 0.85em;
+				color: #888;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5em;
+				align-items: center;
+			}
+			.category {
+				background: #5ba4cf;
+				color: #fff;
+				border-radius: 4px;
+				padding: 0.1em 0.6em;
+				font-size: 0.85em;
+			}
+			.tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.3em;
+				margin-top: 0.5em;
+			}
+			.tag {
+				background: #f0f0f0;
+				border-radius: 4px;
+				padding: 0.1em 0.5em;
+				font-size: 0.75em;
+				color: #555;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="prose">
+					<div class="title">
+						<div class="meta">
+							<span class="category">{category}</span>
+							<FormattedDate date={date} />
+							{updated && <span>（更新: <FormattedDate date={updated} />）</span>}
+						</div>
+						<h1>{title}</h1>
+						{
+							tags.length > 0 && (
+								<div class="tags">
+									{tags.map((tag) => (
+										<span class="tag">{tag}</span>
+									))}
+								</div>
+							)
+						}
+					</div>
+					<Content />
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>
