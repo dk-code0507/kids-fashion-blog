@@ -1,0 +1,93 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<html lang="ja">
+	<head>
+		<BaseHead
+			title={`ページが見つかりません | ${SITE_TITLE}`}
+			description="お探しのページは見つかりませんでした。"
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="container">
+				<div class="emoji">🧸</div>
+				<h1>ページが見つかりません</h1>
+				<p class="message">
+					お探しのページは移動・削除されたか、URLが間違っている可能性があります。
+				</p>
+				<div class="links">
+					<a href="/" class="btn btn-primary">🏠 トップページへ戻る</a>
+					<a href="/reviews/" class="btn">📝 レビュー一覧を見る</a>
+					<a href="/guides/" class="btn">💡 お悩み解決ガイドを見る</a>
+				</div>
+				<p class="code">404 Not Found</p>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 60vh;
+		padding: 2em 1em;
+	}
+	.container {
+		text-align: center;
+		max-width: 480px;
+	}
+	.emoji {
+		font-size: 5em;
+		margin-bottom: 0.3em;
+	}
+	h1 {
+		font-size: 1.8em;
+		margin-bottom: 0.5em;
+		color: #333;
+	}
+	.message {
+		color: #777;
+		line-height: 1.7;
+		margin-bottom: 2em;
+	}
+	.links {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8em;
+		margin-bottom: 2em;
+	}
+	.btn {
+		display: inline-block;
+		padding: 0.7em 1.5em;
+		border-radius: 8px;
+		text-decoration: none;
+		font-size: 0.95em;
+		background: #f0f0f0;
+		color: #333;
+		transition: background 0.2s;
+	}
+	.btn:hover {
+		background: #e0e0e0;
+	}
+	.btn-primary {
+		background: #f5a623;
+		color: #fff;
+	}
+	.btn-primary:hover {
+		background: #e0941a;
+	}
+	.code {
+		font-size: 0.75em;
+		color: #ccc;
+		margin: 0;
+	}
+</style>

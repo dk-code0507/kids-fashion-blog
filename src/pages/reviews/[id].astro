@@ -4,6 +4,7 @@ import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('reviews');
@@ -13,95 +14,67 @@ export async function getStaticPaths() {
 const post = Astro.props;
 const { Content } = await render(post);
 const { title, description, date, updated, category, tags, rating } = post.data;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// JSON-LD: Article + BreadcrumbList + (Review if rating exists)
+const articleJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: title,
+	description: description ?? title,
+	datePublished: date.toISOString(),
+	dateModified: (updated ?? date).toISOString(),
+	author: {
+		'@type': 'Organization',
+		name: SITE_TITLE,
+		url: Astro.site?.toString(),
+	},
+	publisher: {
+		'@type': 'Organization',
+		name: SITE_TITLE,
+		url: Astro.site?.toString(),
+	},
+	mainEntityOfPage: {
+		'@type': 'WebPage',
+		'@id': canonicalURL.toString(),
+	},
+};
+
+const breadcrumbJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'ホーム', item: Astro.site?.toString() },
+		{ '@type': 'ListItem', position: 2, name: 'レビュー', item: new URL('/reviews/', Astro.site).toString() },
+		{ '@type': 'ListItem', position: 3, name: title, item: canonicalURL.toString() },
+	],
+};
+
+const reviewJsonLd = rating
+	? {
+			'@context': 'https://schema.org',
+			'@type': 'Review',
+			name: title,
+			description: description ?? title,
+			reviewRating: {
+				'@type': 'Rating',
+				ratingValue: rating,
+				bestRating: 5,
+				worstRating: 1,
+			},
+			author: {
+				'@type': 'Organization',
+				name: SITE_TITLE,
+			},
+			datePublished: date.toISOString(),
+		}
+	: null;
 ---
 
 <html lang="ja">
 	<head>
-		<BaseHead title={title} description={description ?? title} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1.5em;
-				padding: 1em 0;
-				border-bottom: 1px solid #eee;
-			}
-			.title h1 {
-				font-size: 1.6em;
-				margin: 0.5em 0;
-				line-height: 1.4;
-			}
-			.meta {
-				font-size: 0.85em;
-				color: #888;
-				display: flex;
-				flex-wrap: wrap;
-				gap: 0.5em;
-				align-items: center;
-			}
-			.category {
-				background: #f5a623;
-				color: #fff;
-				border-radius: 4px;
-				padding: 0.1em 0.6em;
-				font-size: 0.85em;
-			}
-			.rating {
-				color: #f5a623;
-				font-weight: bold;
-			}
-			.tags {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 0.3em;
-				margin-top: 0.5em;
-			}
-			.tag {
-				background: #f0f0f0;
-				border-radius: 4px;
-				padding: 0.1em 0.5em;
-				font-size: 0.75em;
-				color: #555;
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="prose">
-					<div class="title">
-						<div class="meta">
-							<span class="category">{category}</span>
-							<FormattedDate date={date} />
-							{updated && <span>（更新: <FormattedDate date={updated} />）</span>}
-							{rating && <span class="rating">★ {rating} / 5.0</span>}
-						</div>
-						<h1>{title}</h1>
-						{
-							tags.length > 0 && (
-								<div class="tags">
-									{tags.map((tag) => (
-										<span class="tag">{tag}</span>
-									))}
-								</div>
-							)
-						}
-					</div>
-					<Content />
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+		<BaseHead title={`${title} | ${SITE_TITLE}`} description={description ?? title} />
+		<script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+		<script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+		{reviewJson

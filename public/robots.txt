@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kodomo-fuku-zukan.com/sitemap-index.xml

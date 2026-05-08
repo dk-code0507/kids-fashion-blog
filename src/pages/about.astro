@@ -1,63 +1,74 @@
 ---
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
-import Layout from '../layouts/BlogPost.astro';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 ---
 
-<Layout
-	title="About Me"
-	description="Lorem ipsum dolor sit amet"
-	pubDate={new Date('August 08 2021')}
-	heroImage={AboutHeroImage}
->
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo
-		viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam
-		adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus
-		et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus
-		vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque
-		sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
-	</p>
+<html lang="ja">
+	<head>
+		<BaseHead
+			title={`このサイトについて | ${SITE_TITLE}`}
+			description="こどもふく図鑑は、1〜3歳の子ども服を実際に着せた正直レビューとお悩み解決ガイドをお届けするサイトです。運営者情報・サイトポリシーについて。"
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="prose">
+				<nav class="breadcrumb" aria-label="パンくずリスト">
+					<a href="/">ホーム</a> &rsaquo; このサイトについて
+				</nav>
 
-	<p>
-		Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non
-		tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non
-		blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna
-		porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis
-		massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-		Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis
-		bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra
-		massa massa ultricies mi.
-	</p>
+				<h1>このサイトについて</h1>
 
-	<p>
-		Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl
-		suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet
-		nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae
-		turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem
-		dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat
-		semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus
-		vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum
-		facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam
-		vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla
-		urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
-	</p>
+				<section>
+					<h2>こどもふく図鑑とは</h2>
+					<p>
+						「こどもふく図鑑」は、<strong>1〜3歳の子ども服を実際に着せて正直にレビューする</strong>情報サイトです。
+					</p>
+					<p>
+						子ども服選びって、意外と難しいと思いませんか？ 成長が早くてすぐサイズアウトするから高いものは買いにくい。でも安すぎると品質が心配。ブランドごとにサイズ感も違うし、素材も何を選べばいいか迷う…。
+					</p>
+					<p>
+						このサイトでは、そんなパパ・ママのリアルな悩みに答えるために、<strong>実際に子どもに着せた経験にもとづく正直なレビュー</strong>と、サイズ・素材・コーディネートに関する<strong>お悩み解決ガイド</strong>をお届けしています。
+					</p>
+				</section>
 
-	<p>
-		Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper
-		viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc
-		scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur
-		gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus
-		pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim
-		blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id
-		cursus metus aliquam eleifend mi.
-	</p>
+				<section>
+					<h2>レビューの方針</h2>
+					<p>このサイトのレビューは、以下の方針で執筆しています。</p>
+					<ul>
+						<li><strong>実際に着せた経験にもとづく</strong> — 試着せず写真だけで評価することはしません</li>
+						<li><strong>良い点も悪い点も正直に書く</strong> — スポンサードの有無にかかわらず、感じたことをそのまま記載します</li>
+						<li><strong>数値・データを重視</strong> — 「大きめ」ではなく「実測で+2cm」のように具体的に書くことを心がけています</li>
+						<li><strong>定期的に更新</strong> — 価格やラインアップは変わるため、古くなった情報は随時更新します</li>
+					</ul>
+				</section>
 
-	<p>
-		Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta
-		nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam
-		tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci
-		ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar
-		proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
-	</p>
-</Layout>
+				<section>
+					<h2>運営者について</h2>
+					<p>
+						1〜3歳の子どもを持つ親として、自分が「欲しかった情報」を発信しています。
+						子どもの肌が敏感で素材選びに苦労した経験や、ブランドのサイズ感の違いに何度も悩まされた経験が、このサイトを作るきっかけになりました。
+					</p>
+					<p>
+						医療・育児の専門家ではありませんが、<strong>実際に着せてきた親の目線</strong>での率直な情報をお伝えすることを大切にしています。
+					</p>
+					<p>
+						お問い合わせは <a href="mailto:d.kobayashi0803@gmail.com">こちら</a> からどうぞ。
+					</p>
+				</section>
+
+				<section>
+					<h2>アフィリエイト・広告について</h2>
+					<p>
+						当サイトは、以下のアフィリエイトプログラムに参加しています。
+					</p>
+					<ul>
+						<li>Amazonアソシエイト・プログラム</li>
+						<li>楽天アフィリエイト</li>
+						<li>その他ASPを通じたアフィリエイトリンク</li>
+					</ul>
+					<p>
+						記事内にアフィリエイトリンクが含まれる場合がありますが、<strong

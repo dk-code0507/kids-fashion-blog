@@ -1,0 +1,125 @@
+---
+/**
+ * AffiliateCTA.astro
+ * アフィリエイトリンクを整形して表示するコンポーネント。
+ * 使い方:
+ *   <AffiliateCTA
+ *     title="GAPブラナンベアパーカーを見る"
+ *     links={{
+ *       gap: { url: "https://...", label: "GAP公式" },
+ *       rakuten: { url: "https://...", label: "楽天市場" },
+ *       amazon: { url: "https://...", label: "Amazon" },
+ *     }}
+ *   />
+ */
+
+interface AffiliateLink {
+	url: string;
+	label: string;
+}
+
+interface Props {
+	title?: string;
+	links: {
+		gap?: AffiliateLink;
+		rakuten?: AffiliateLink;
+		amazon?: AffiliateLink;
+		other?: AffiliateLink[];
+	};
+	note?: string;
+}
+
+const {
+	title = '購入・価格を確認する',
+	links,
+	note,
+} = Astro.props;
+
+const allLinks = [
+	links.gap && { ...links.gap, icon: '🏪', color: '#004F93' },
+	links.rakuten && { ...links.rakuten, icon: '🦅', color: '#BF0000' },
+	links.amazon && { ...links.amazon, icon: '📦', color: '#FF9900' },
+	...(links.other ?? []).map((l) => ({ ...l, icon: '🔗', color: '#555' })),
+].filter(Boolean);
+---
+
+<div class="affiliate-cta">
+	<p class="affiliate-cta__title">{title}</p>
+	<div class="affiliate-cta__links">
+		{
+			allLinks.map((link) => (
+				<a
+					href={link!.url}
+					target="_blank"
+					rel="nofollow sponsored noopener noreferrer"
+					class="affiliate-cta__btn"
+					style={`--btn-color: ${link!.color}`}
+				>
+					<span class="affiliate-cta__icon">{link!.icon}</span>
+					{link!.label}で見る
+				</a>
+			))
+		}
+	</div>
+	{note && <p class="affiliate-cta__note">{note}</p>}
+	<p class="affiliate-cta__disclosure">※ 本リンクはアフィリエイトリンクです。リンク経由でご購入いただくと、サイト運営者に紹介料が支払われます（お客様の購入価格は変わりません）。</p>
+</div>
+
+<style>
+	.affiliate-cta {
+		background: #fffbf2;
+		border: 2px solid #f5a623;
+		border-radius: 10px;
+		padding: 1.2em 1.4em;
+		margin: 2em 0;
+	}
+
+	.affiliate-cta__title {
+		font-weight: bold;
+		font-size: 1em;
+		margin: 0 0 0.8em;
+		color: #333;
+	}
+
+	.affiliate-cta__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6em;
+		margin-bottom: 0.8em;
+	}
+
+	.affiliate-cta__btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		background: var(--btn-color, #555);
+		color: #fff;
+		text-decoration: none;
+		padding: 0.5em 1.2em;
+		border-radius: 6px;
+		font-size: 0.9em;
+		font-weight: bold;
+		transition: opacity 0.2s;
+	}
+
+	.affiliate-cta__btn:hover {
+		opacity: 0.85;
+	}
+
+	.affiliate-cta__icon {
+		font-size: 1.1em;
+	}
+
+	.affiliate-cta__note {
+		font-size: 0.85em;
+		color: #555;
+		margin: 0.5em 0;
+	}
+
+	.affiliate-cta__disclosure {
+		font-size: 0.72em;
+		color: #aaa;
+		margin: 0;
+		line-height: 1.5;
+	}
+</style>
