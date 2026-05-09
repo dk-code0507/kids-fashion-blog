@@ -1,12 +1,25 @@
 @echo off
-chcp 65001 > nul
-cd /d C:\Users\dkoba\projects\kids-fashion-blog
+cd /d "%~dp0"
+echo.
+echo ===== kosodatezukan auto push =====
+echo.
+
 git add -A
-git status
-echo.
-set /p msg="Commit message: "
+
+git diff --cached --quiet
+if %errorlevel% == 0 (
+    echo No changes to push.
+    pause
+    exit /b 0
+)
+
+set /p msg="Commit message (Enter for default): "
+if "%msg%"=="" set msg=update: content update
+
 git commit -m "%msg%"
-git push origin main
+git push
+
 echo.
-echo Done! Vercel will auto-deploy now.
+echo Done! Vercel will deploy automatically.
+echo.
 pause
