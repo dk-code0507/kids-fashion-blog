@@ -75,6 +75,108 @@ const reviewJsonLd = rating
 <html lang="ja">
 	<head>
 		<BaseHead title={`${title} | ${SITE_TITLE}`} description={description ?? title} />
-		<script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
-		<script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
-		{reviewJson
+		<Fragment set:html={`<script type="application/ld+json">${JSON.stringify(articleJsonLd)}</script>`} />
+		<Fragment set:html={`<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}</script>`} />
+		{reviewJsonLd && <Fragment set:html={`<script type="application/ld+json">${JSON.stringify(reviewJsonLd)}</script>`} />}
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.breadcrumb {
+				font-size: 0.8em;
+				color: #aaa;
+				margin-bottom: 1em;
+			}
+			.breadcrumb a {
+				color: #aaa;
+				text-decoration: none;
+			}
+			.breadcrumb a:hover {
+				text-decoration: underline;
+			}
+			.title {
+				margin-bottom: 1.5em;
+				padding: 1em 0;
+				border-bottom: 1px solid #eee;
+			}
+			.title h1 {
+				font-size: 1.6em;
+				margin: 0.5em 0;
+				line-height: 1.4;
+			}
+			.meta {
+				font-size: 0.85em;
+				color: #888;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5em;
+				align-items: center;
+			}
+			.category {
+				background: #f5a623;
+				color: #fff;
+				border-radius: 4px;
+				padding: 0.1em 0.6em;
+				font-size: 0.85em;
+			}
+			.rating {
+				color: #f5a623;
+				font-weight: bold;
+			}
+			.tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.3em;
+				margin-top: 0.5em;
+			}
+			.tag {
+				background: #f0f0f0;
+				border-radius: 4px;
+				padding: 0.1em 0.5em;
+				font-size: 0.75em;
+				color: #555;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="prose">
+					<nav class="breadcrumb" aria-label="パンくずリスト">
+						<a href="/">ホーム</a> &rsaquo; <a href="/reviews/">レビュー</a> &rsaquo; {title}
+					</nav>
+					<div class="title">
+						<div class="meta">
+							<span class="category">{category}</span>
+							<FormattedDate date={date} />
+							{updated && <span>（更新: <FormattedDate date={updated} />）</span>}
+							{rating && <span class="rating">★ {rating} / 5.0</span>}
+						</div>
+						<h1>{title}</h1>
+						{
+							tags.length > 0 && (
+								<div class="tags">
+									{tags.map((tag) => (
+										<span class="tag">{tag}</span>
+									))}
+								</div>
+							)
+						}
+					</div>
+					<Content />
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>
