@@ -13,7 +13,7 @@ export async function getStaticPaths() {
 
 const post = Astro.props;
 const { Content } = await render(post);
-const { title, description, date, updated, category, tags, rating } = post.data;
+const { title, description, date, updated, category, tags, rating, thumbnail } = post.data;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
@@ -70,6 +70,15 @@ const reviewJsonLd = rating
 			datePublished: date.toISOString(),
 		}
 	: null;
+
+// 星の表示
+function renderStars(r: number): string {
+	const full = Math.floor(r);
+	const half = r - full >= 0.5;
+	let s = '★'.repeat(full);
+	if (half) s += '☆';
+	return s;
+}
 ---
 
 <html lang="ja">
@@ -79,22 +88,18 @@ const reviewJsonLd = rating
 		<Fragment set:html={`<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}</script>`} />
 		{reviewJsonLd && <Fragment set:html={`<script type="application/ld+json">${JSON.stringify(reviewJsonLd)}</script>`} />}
 		<style>
+			/* ===== レイアウト ===== */
 			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
+				max-width: 780px;
+				margin: 0 auto;
+				padding: 0 1em 4em;
 			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
+
+			/* ===== パンくず ===== */
 			.breadcrumb {
-				font-size: 0.8em;
+				font-size: 0.78em;
 				color: #aaa;
-				margin-bottom: 1em;
+				margin: 1.2em 0 1em;
 			}
 			.breadcrumb a {
 				color: #aaa;
@@ -102,48 +107,265 @@ const reviewJsonLd = rating
 			}
 			.breadcrumb a:hover {
 				text-decoration: underline;
+				color: #f5a623;
 			}
-			.title {
-				margin-bottom: 1.5em;
-				padding: 1em 0;
-				border-bottom: 1px solid #eee;
+
+			/* ===== 記事ヘッダー ===== */
+			.article-header {
+				margin-bottom: 1.8em;
 			}
-			.title h1 {
-				font-size: 1.6em;
-				margin: 0.5em 0;
-				line-height: 1.4;
-			}
-			.meta {
-				font-size: 0.85em;
-				color: #888;
+			.article-meta {
 				display: flex;
 				flex-wrap: wrap;
-				gap: 0.5em;
 				align-items: center;
+				gap: 0.5em;
+				margin-bottom: 0.6em;
 			}
-			.category {
+			.category-badge {
 				background: #f5a623;
 				color: #fff;
 				border-radius: 4px;
-				padding: 0.1em 0.6em;
-				font-size: 0.85em;
-			}
-			.rating {
-				color: #f5a623;
+				padding: 0.15em 0.7em;
+				font-size: 0.8em;
 				font-weight: bold;
 			}
-			.tags {
+			.article-date {
+				font-size: 0.8em;
+				color: #aaa;
+			}
+			.article-updated {
+				font-size: 0.78em;
+				color: #bbb;
+			}
+			.article-title {
+				font-size: 1.65em;
+				line-height: 1.45;
+				color: #222;
+				margin: 0.3em 0 0.6em;
+			}
+			.article-tags {
 				display: flex;
 				flex-wrap: wrap;
 				gap: 0.3em;
-				margin-top: 0.5em;
+				margin-top: 0.4em;
 			}
-			.tag {
-				background: #f0f0f0;
+			.article-tag {
+				background: #f5f5f5;
 				border-radius: 4px;
-				padding: 0.1em 0.5em;
+				padding: 0.15em 0.5em;
+				font-size: 0.72em;
+				color: #666;
+			}
+
+			/* ===== ヒーロー画像 ===== */
+			.hero-image {
+				margin: 1.2em 0 2em;
+				border-radius: 12px;
+				overflow: hidden;
+				background: #f5f5f5;
+				aspect-ratio: 16/9;
+			}
+			.hero-image img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+
+			/* ===== 評価ボックス ===== */
+			.rating-box {
+				background: linear-gradient(135deg, #fff8ee, #fff3e0);
+				border: 2px solid #f5a623;
+				border-radius: 12px;
+				padding: 1.2em 1.5em;
+				margin: 1.5em 0 2em;
+				display: flex;
+				align-items: center;
+				gap: 1.5em;
+				flex-wrap: wrap;
+			}
+			.rating-score {
+				text-align: center;
+				flex-shrink: 0;
+			}
+			.rating-number {
+				font-size: 2.8em;
+				font-weight: bold;
+				color: #f5a623;
+				line-height: 1;
+			}
+			.rating-max {
+				font-size: 0.8em;
+				color: #aaa;
+			}
+			.rating-stars {
+				font-size: 1.3em;
+				color: #f5a623;
+				margin: 0.2em 0;
+			}
+			.rating-label {
 				font-size: 0.75em;
+				color: #888;
+				font-weight: bold;
+			}
+			.rating-divider {
+				width: 1px;
+				height: 60px;
+				background: #f0d5a0;
+				flex-shrink: 0;
+			}
+			.rating-summary {
+				flex: 1;
+				min-width: 200px;
+			}
+			.rating-summary p {
+				font-size: 0.88em;
+				line-height: 1.7;
 				color: #555;
+				margin: 0;
+			}
+
+			/* ===== 記事本文 ===== */
+			.prose {
+				color: #333;
+				font-size: 0.97em;
+				line-height: 1.85;
+			}
+
+			/* 見出し */
+			.prose :global(h2) {
+				font-size: 1.25em;
+				font-weight: bold;
+				color: #222;
+				margin: 2.2em 0 0.8em;
+				padding: 0.5em 0.8em;
+				background: #fff8f0;
+				border-left: 5px solid #f5a623;
+				border-radius: 0 8px 8px 0;
+			}
+			.prose :global(h3) {
+				font-size: 1.05em;
+				font-weight: bold;
+				color: #333;
+				margin: 1.8em 0 0.6em;
+				padding-bottom: 0.3em;
+				border-bottom: 2px dashed #f5d080;
+			}
+			.prose :global(h4) {
+				font-size: 0.97em;
+				font-weight: bold;
+				color: #555;
+				margin: 1.4em 0 0.4em;
+			}
+
+			/* 段落 */
+			.prose :global(p) {
+				margin: 0 0 1em;
+				line-height: 1.85;
+			}
+
+			/* リスト */
+			.prose :global(ul),
+			.prose :global(ol) {
+				padding-left: 1.5em;
+				margin: 0.6em 0 1em;
+			}
+			.prose :global(li) {
+				margin-bottom: 0.4em;
+				line-height: 1.75;
+			}
+
+			/* テーブル */
+			.prose :global(table) {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 1.2em 0;
+				font-size: 0.9em;
+				overflow: hidden;
+				border-radius: 8px;
+				box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+			}
+			.prose :global(th) {
+				background: #f5a623;
+				color: #fff;
+				padding: 0.6em 0.9em;
+				text-align: left;
+				font-weight: bold;
+				font-size: 0.9em;
+			}
+			.prose :global(td) {
+				padding: 0.55em 0.9em;
+				border-bottom: 1px solid #f0f0f0;
+				color: #444;
+			}
+			.prose :global(tr:nth-child(even) td) {
+				background: #fafafa;
+			}
+			.prose :global(tr:last-child td) {
+				border-bottom: none;
+			}
+
+			/* 引用・callout */
+			.prose :global(blockquote) {
+				margin: 1.2em 0;
+				padding: 1em 1.2em;
+				background: #f0f8ff;
+				border-left: 4px solid #4aabdb;
+				border-radius: 0 8px 8px 0;
+				color: #3a5f7a;
+				font-size: 0.93em;
+			}
+			.prose :global(blockquote p) {
+				margin: 0;
+			}
+
+			/* 水平線 */
+			.prose :global(hr) {
+				border: none;
+				border-top: 1px solid #f0e8dc;
+				margin: 2em 0;
+			}
+
+			/* 強調 */
+			.prose :global(strong) {
+				color: #c75000;
+				font-weight: bold;
+			}
+
+			/* インライン画像 */
+			.prose :global(img) {
+				max-width: 100%;
+				height: auto;
+				border-radius: 10px;
+				display: block;
+				margin: 1.2em auto;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+
+			/* コード */
+			.prose :global(code) {
+				background: #f5f5f5;
+				padding: 0.1em 0.4em;
+				border-radius: 4px;
+				font-size: 0.88em;
+				color: #c75000;
+			}
+
+			/* ===== レスポンシブ ===== */
+			@media (max-width: 640px) {
+				.article-title {
+					font-size: 1.3em;
+				}
+				.rating-box {
+					gap: 1em;
+					padding: 1em;
+				}
+				.rating-divider {
+					display: none;
+				}
+				.prose :global(h2) {
+					font-size: 1.1em;
+				}
 			}
 		</style>
 	</head>
@@ -151,28 +373,57 @@ const reviewJsonLd = rating
 		<Header />
 		<main>
 			<article>
-				<div class="prose">
-					<nav class="breadcrumb" aria-label="パンくずリスト">
-						<a href="/">ホーム</a> &rsaquo; <a href="/reviews/">レビュー</a> &rsaquo; {title}
-					</nav>
-					<div class="title">
-						<div class="meta">
-							<span class="category">{category}</span>
-							<FormattedDate date={date} />
-							{updated && <span>（更新: <FormattedDate date={updated} />）</span>}
-							{rating && <span class="rating">★ {rating} / 5.0</span>}
-						</div>
-						<h1>{title}</h1>
-						{
-							tags.length > 0 && (
-								<div class="tags">
-									{tags.map((tag) => (
-										<span class="tag">{tag}</span>
-									))}
-								</div>
-							)
-						}
+				<!-- パンくず -->
+				<nav class="breadcrumb" aria-label="パンくずリスト">
+					<a href="/">ホーム</a> &rsaquo; <a href="/reviews/">レビュー</a> &rsaquo; {title}
+				</nav>
+
+				<!-- 記事ヘッダー -->
+				<div class="article-header">
+					<div class="article-meta">
+						<span class="category-badge">{category}</span>
+						<span class="article-date"><FormattedDate date={date} /></span>
+						{updated && <span class="article-updated">（更新: <FormattedDate date={updated} />）</span>}
 					</div>
+					<h1 class="article-title">{title}</h1>
+					{tags.length > 0 && (
+						<div class="article-tags">
+							{tags.map((tag) => (
+								<span class="article-tag"># {tag}</span>
+							))}
+						</div>
+					)}
+				</div>
+
+				<!-- ヒーロー画像 -->
+				{thumbnail && (
+					<div class="hero-image">
+						<img
+							src={thumbnail}
+							alt={title}
+							loading="eager"
+						/>
+					</div>
+				)}
+
+				<!-- 評価ボックス -->
+				{rating && (
+					<div class="rating-box">
+						<div class="rating-score">
+							<div class="rating-number">{rating}</div>
+							<div class="rating-stars">{renderStars(rating)}</div>
+							<div class="rating-max">/ 5.0</div>
+							<div class="rating-label">総合評価</div>
+						</div>
+						<div class="rating-divider"></div>
+						<div class="rating-summary">
+							<p>{description}</p>
+						</div>
+					</div>
+				)}
+
+				<!-- 記事本文 -->
+				<div class="prose">
 					<Content />
 				</div>
 			</article>

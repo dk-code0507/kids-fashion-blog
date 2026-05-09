@@ -1,322 +1,281 @@
 """
-顔・背景ぼかしツール
-====================================
-子どもの写真の顔検出・背景ぼかし処理をします。
-
-【初回セットアップ】
-  pip install mediapipe opencv-python-headless
+顔スタンプ・ぼかしツール
+================================================
+必要なもの（初回のみ）:
+  pip install opencv-python-headless
 
 【使い方】
-  python tools/blur_faces.py 写真.jpg                   # 顔だけぼかす
-  python tools/blur_faces.py 写真.jpg --mode bg         # 背景だけぼかす
-  python tools/blur_faces.py 写真.jpg --mode both       # 顔+背景 両方（おすすめ）
-  python tools/blur_faces.py photos/  --mode both       # フォルダ一括
-  python tools/blur_faces.py 写真.jpg --debug           # 検出範囲を確認
+
+■ 手動で顔位置を指定してスタンプ（一番確実）:
+  python tools/blur_faces.py 写真.jpg --stamp 25 18
+  ↑ 「画像の左から25%、上から18%の位置」にスタンプ
+  ※ 写真を見てだいたいの位置をパーセントで指定
+
+■ 複数の顔に対応:
+  python tools/blur_faces.py 写真.jpg --stamp 25 18 --stamp 60 20
+
+■ スタンプの種類を変える:
+  python tools/blur_faces.py 写真.jpg --stamp 25 18 --style star   # ⭐（デフォルト）
+  python tools/blur_faces.py 写真.jpg --stamp 25 18 --style circle # 丸ぼかし
+  python tools/blur_faces.py 写真.jpg --stamp 25 18 --style mosaic # モザイク
+
+■ スタンプのサイズを変える（デフォルト18%）:
+  python tools/blur_faces.py 写真.jpg --stamp 25 18 --size 22
+
+■ 自動検出を試す（横顔は検出できないことがあります）:
+  python tools/blur_faces.py 写真.jpg --auto
+  python tools/blur_faces.py 写真.jpg --auto --style mosaic
+
+■ フォルダ一括（自動検出）:
+  python tools/blur_faces.py photos/ --auto
 """
 
 import sys
 import os
 import argparse
+import math
 
 try:
     import cv2
     import numpy as np
 except ImportError:
-    print("❌ opencv が必要です: pip install opencv-python-headless")
+    print("opencv が必要です: pip install opencv-python-headless")
     sys.exit(1)
 
-try:
-    import mediapipe as mp
-    HAS_MEDIAPIPE = True
-except ImportError:
-    HAS_MEDIAPIPE = False
+
+# ─────────────────────────────────────────
+#  スタンプ描画
+# ─────────────────────────────────────────
+
+def draw_star(img, cx, cy, r):
+    """黄色い星スタンプ"""
+    pts = []
+    for i in range(10):
+        angle = math.radians(i * 36 - 90)
+        radius = r if i % 2 == 0 else r * 0.45
+        pts.append((int(cx + radius * math.cos(angle)),
+                    int(cy + radius * math.sin(angle))))
+    pts = np.array(pts, np.int32)
+    # 影
+    shadow = pts + np.array([4, 4])
+    cv2.fillPoly(img, [shadow], (80, 80, 0))
+    # 星本体
+    cv2.fillPoly(img, [pts], (0, 210, 255))    # 黄色（BGR）
+    cv2.polylines(img, [pts], True, (0, 160, 200), max(2, r // 20))
 
 
-# ============================================================
-#  顔検出
-# ============================================================
-
-def detect_faces_mediapipe(img):
-    """MediaPipe で顔検出（精度高・横顔・子どもも対応）"""
-    mp_face = mp.solutions.face_detection
-    h, w = img.shape[:2]
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    faces = []
-    # model_selection=0: 2m以内の近距離向け（子ども写真に最適）
-    # model_selection=1: 遠距離向け（複数人・引きの写真）
-    for model in [0, 1]:
-        with mp_face.FaceDetection(model_selection=model, min_detection_confidence=0.3) as detector:
-            result = detector.process(img_rgb)
-            if result.detections:
-                for det in result.detections:
-                    bb = det.location_data.relative_bounding_box
-                    x = max(0, int(bb.xmin * w))
-                    y = max(0, int(bb.ymin * h))
-                    fw = int(bb.width * w)
-                    fh = int(bb.height * h)
-                    faces.append((x, y, fw, fh))
-
-    # 重複を除去（近い座標のものは1つにまとめる）
-    return deduplicate_faces(faces)
+def draw_circle_blur(img, cx, cy, r):
+    """丸ぼかし（グラデーション境界）"""
+    H, W = img.shape[:2]
+    mask = np.zeros((H, W), dtype=np.float32)
+    cv2.circle(mask, (cx, cy), r, 1.0, -1)
+    mask = cv2.GaussianBlur(mask, (r | 1, r | 1), r // 3)
+    mask3 = np.stack([mask] * 3, axis=-1)
+    k = 61
+    blurred = cv2.GaussianBlur(img, (k, k), 30)
+    result = (img.astype(np.float32) * (1 - mask3) +
+              blurred.astype(np.float32) * mask3).astype(np.uint8)
+    img[:] = result
 
 
-def detect_faces_opencv(img):
-    """フォールバック: OpenCV Haar（精度は低め）"""
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
-    h, w = img.shape[:2]
-    min_face = max(20, min(h, w) // 12)
+def draw_mosaic(img, cx, cy, r):
+    """モザイク"""
+    H, W = img.shape[:2]
+    x1, y1 = max(0, cx - r), max(0, cy - r)
+    x2, y2 = min(W, cx + r), min(H, cy + r)
+    if x2 <= x1 or y2 <= y1:
+        return
+    roi = img[y1:y2, x1:x2]
+    rh, rw = roi.shape[:2]
+    block = max(8, min(rh, rw) // 8)
+    small = cv2.resize(roi, (max(1, rw // block), max(1, rh // block)),
+                       interpolation=cv2.INTER_LINEAR)
+    mosaic = cv2.resize(small, (rw, rh), interpolation=cv2.INTER_NEAREST)
+    # 円形マスクで切り抜き
+    circle_mask = np.zeros((rh, rw), dtype=np.float32)
+    cv2.circle(circle_mask, (rw // 2, rh // 2), min(rh, rw) // 2, 1.0, -1)
+    circle_mask = cv2.GaussianBlur(circle_mask, (21, 21), 10)
+    m3 = np.stack([circle_mask] * 3, axis=-1)
+    img[y1:y2, x1:x2] = (roi.astype(np.float32) * (1 - m3) +
+                           mosaic.astype(np.float32) * m3).astype(np.uint8)
 
-    all_faces = []
-    for name in ['haarcascade_frontalface_default.xml', 'haarcascade_frontalface_alt.xml',
-                 'haarcascade_frontalface_alt2.xml', 'haarcascade_profileface.xml']:
+
+def apply_stamp(img, cx, cy, size_px, style):
+    r = size_px // 2
+    if style == 'star':
+        draw_star(img, cx, cy, r)
+    elif style == 'circle':
+        draw_circle_blur(img, cx, cy, r)
+    elif style == 'mosaic':
+        draw_mosaic(img, cx, cy, r)
+
+
+# ─────────────────────────────────────────
+#  自動顔検出（横顔は苦手）
+# ─────────────────────────────────────────
+
+def detect_faces(img):
+    H, W = img.shape[:2]
+    MAX = 800
+    sc = min(1.0, MAX / max(H, W))
+    small = cv2.resize(img, (int(W * sc), int(H * sc))) if sc < 1.0 else img
+    gray = cv2.equalizeHist(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY))
+    sh, sw = small.shape[:2]
+    min_sz = max(15, min(sh, sw) // 14)
+
+    boxes = []
+    for name in ['haarcascade_frontalface_default.xml',
+                 'haarcascade_frontalface_alt.xml',
+                 'haarcascade_frontalface_alt2.xml',
+                 'haarcascade_profileface.xml']:
         path = cv2.data.haarcascades + name
         if not os.path.exists(path):
             continue
-        cascade = cv2.CascadeClassifier(path)
-        detected = cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3,
-                                            minSize=(min_face, min_face))
-        if len(detected) > 0:
-            all_faces.extend(detected.tolist())
+        hits = cv2.CascadeClassifier(path).detectMultiScale(
+            gray, 1.05, 2, minSize=(min_sz, min_sz))
+        if len(hits) > 0:
+            for (x, y, w, h) in hits:
+                boxes.append((int(x/sc), int(y/sc), int(w/sc), int(h/sc)))
 
-    return deduplicate_faces(all_faces)
+    return nms(boxes)
 
 
-def deduplicate_faces(faces, iou_thresh=0.4):
-    """重複するバウンディングボックスをまとめる"""
-    if not faces:
+def nms(boxes, thresh=0.4):
+    if not boxes:
         return []
-    boxes = np.array(faces, dtype=float)
-    x1 = boxes[:, 0]
-    y1 = boxes[:, 1]
-    x2 = boxes[:, 0] + boxes[:, 2]
-    y2 = boxes[:, 1] + boxes[:, 3]
-    areas = (x2 - x1) * (y2 - y1)
+    a = np.array(boxes, dtype=float)
+    x1,y1,x2,y2 = a[:,0], a[:,1], a[:,0]+a[:,2], a[:,1]+a[:,3]
+    areas = (x2-x1)*(y2-y1)
     order = areas.argsort()[::-1]
     keep = []
-    while order.size > 0:
-        i = order[0]
-        keep.append(i)
+    while order.size:
+        i = order[0]; keep.append(i)
         ix1 = np.maximum(x1[i], x1[order[1:]])
         iy1 = np.maximum(y1[i], y1[order[1:]])
         ix2 = np.minimum(x2[i], x2[order[1:]])
         iy2 = np.minimum(y2[i], y2[order[1:]])
-        iw = np.maximum(0, ix2 - ix1)
-        ih = np.maximum(0, iy2 - iy1)
-        iou = (iw * ih) / (areas[i] + areas[order[1:]] - iw * ih + 1e-6)
-        order = order[np.where(iou <= iou_thresh)[0] + 1]
-    return [boxes[i].astype(int).tolist() for i in keep]
+        iou = (np.maximum(0,ix2-ix1)*np.maximum(0,iy2-iy1)) / \
+              (areas[i]+areas[order[1:]]-np.maximum(0,ix2-ix1)*np.maximum(0,iy2-iy1)+1e-6)
+        order = order[np.where(iou<=thresh)[0]+1]
+    return [tuple(a[i].astype(int)) for i in keep]
 
 
-# ============================================================
-#  ぼかし処理
-# ============================================================
-
-def apply_face_blur(img, x, y, w, h, blur_level=55):
-    """顔領域にぼかし＋モザイクを適用"""
-    pad_x = int(w * 0.4)
-    pad_y_top = int(h * 0.7)  # 上は多め（髪の毛まで隠す）
-    pad_y_bot = int(h * 0.25)
-
-    x1 = max(0, x - pad_x)
-    y1 = max(0, y - pad_y_top)
-    x2 = min(img.shape[1], x + w + pad_x)
-    y2 = min(img.shape[0], y + h + pad_y_bot)
-
-    if x2 <= x1 or y2 <= y1:
-        return
-
-    region = img[y1:y2, x1:x2].copy()
-    rh, rw = region.shape[:2]
-
-    # ガウシアンぼかし
-    k = blur_level * 2 + 1
-    blurred = cv2.GaussianBlur(region, (k, k), blur_level)
-
-    # モザイク（ピクセル化）
-    mosaic_scale = max(1, min(rh, rw) // 8)
-    small = cv2.resize(blurred, (max(1, rw // mosaic_scale), max(1, rh // mosaic_scale)),
-                       interpolation=cv2.INTER_LINEAR)
-    mosaic = cv2.resize(small, (rw, rh), interpolation=cv2.INTER_NEAREST)
-
-    # ぼかし＋モザイク合成
-    img[y1:y2, x1:x2] = cv2.addWeighted(blurred, 0.4, mosaic, 0.6, 0)
-
-
-def apply_background_blur(img, blur_level=35):
-    """MediaPipe Selfie Segmentation で背景だけぼかす"""
-    if not HAS_MEDIAPIPE:
-        print("  ⚠️  背景ぼかしには mediapipe が必要: pip install mediapipe")
-        return img
-
-    mp_seg = mp.solutions.selfie_segmentation
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    with mp_seg.SelfieSegmentation(model_selection=1) as seg:
-        result = seg.process(img_rgb)
-        mask = result.segmentation_mask  # 0.0〜1.0（人物=1.0）
-
-    # マスクをスムーズに（境界をぼかす）
-    mask_smooth = cv2.GaussianBlur(mask, (21, 21), 11)
-    mask_3ch = np.stack([mask_smooth] * 3, axis=-1).astype(np.float32)
-
-    # 背景をぼかす
-    k = blur_level * 2 + 1
-    bg_blurred = cv2.GaussianBlur(img, (k, k), blur_level)
-
-    # 合成: 人物は元画像、背景はぼかし
-    img_float = img.astype(np.float32)
-    bg_float = bg_blurred.astype(np.float32)
-    output = (img_float * mask_3ch + bg_float * (1.0 - mask_3ch)).astype(np.uint8)
-    return output
-
-
-# ============================================================
+# ─────────────────────────────────────────
 #  メイン処理
-# ============================================================
+# ─────────────────────────────────────────
 
-def process_image(input_path: str, output_path: str,
-                  mode: str = 'face', blur_level: int = 55,
-                  bg_blur: int = 35, debug: bool = False) -> bool:
-    """
-    1枚の画像を処理する
-
-    mode: 'face' | 'bg' | 'both'
-    """
-    img = cv2.imread(input_path)
+def process(src, dst, stamps, size_pct, style, auto):
+    img = cv2.imread(src)
     if img is None:
-        print(f"  ❌ 画像を読み込めませんでした: {input_path}")
+        print(f"  NG: {src}")
+        return False
+    H, W = img.shape[:2]
+
+    positions = []  # (cx, cy, size_px)
+
+    # 手動スタンプ
+    for (px_pct, py_pct) in stamps:
+        cx = int(W * px_pct / 100)
+        cy = int(H * py_pct / 100)
+        size_px = int(min(W, H) * size_pct / 100)
+        positions.append((cx, cy, size_px))
+
+    # 自動検出
+    if auto:
+        faces = detect_faces(img)
+        if faces:
+            print(f"  OK: {len(faces)} 個検出")
+            for (x, y, w, h) in faces:
+                cx = x + w // 2
+                cy = y + h // 2
+                size_px = int(max(w, h) * 1.6)
+                positions.append((cx, cy, size_px))
+        else:
+            print(f"  --: 顔が検出されませんでした")
+            print(f"      --stamp X Y で手動指定してください")
+
+    if not positions:
+        print(f"  ?? スタンプ位置が指定されていません")
+        print(f"     例: --stamp 25 18  (左から25%, 上から18%)")
         return False
 
-    # --- 背景ぼかし ---
-    if mode in ('bg', 'both') and not debug:
-        print(f"  🌆 背景をぼかし中...")
-        img = apply_background_blur(img, bg_blur)
+    for (cx, cy, size_px) in positions:
+        apply_stamp(img, cx, cy, size_px, style)
+        print(f"  スタンプ: ({cx}, {cy}) サイズ={size_px}px スタイル={style}")
 
-    # --- 顔検出・ぼかし ---
-    if mode in ('face', 'both') or debug:
-        if HAS_MEDIAPIPE:
-            faces = detect_faces_mediapipe(img)
-            detector_name = 'MediaPipe'
-        else:
-            faces = detect_faces_opencv(img)
-            detector_name = 'OpenCV (精度低め)'
-
-        if len(faces) == 0:
-            print(f"  ⚠️  顔が検出されませんでした [{detector_name}]")
-            print(f"      → --debug で確認、または写真を送ってください")
-        else:
-            print(f"  ✅ {len(faces)} 個の顔を検出 [{detector_name}]")
-
-        for face in faces:
-            x, y, w, h = int(face[0]), int(face[1]), int(face[2]), int(face[3])
-            if debug:
-                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 3)
-                pad_x = int(w * 0.4)
-                pad_y_top = int(h * 0.7)
-                pad_y_bot = int(h * 0.25)
-                x1 = max(0, x - pad_x)
-                y1 = max(0, y - pad_y_top)
-                x2 = min(img.shape[1], x + w + pad_x)
-                y2 = min(img.shape[0], y + h + pad_y_bot)
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            else:
-                apply_face_blur(img, x, y, w, h, blur_level)
-
-    # --- 保存 ---
-    out_dir = os.path.dirname(output_path)
-    if out_dir:
-        os.makedirs(out_dir, exist_ok=True)
-    cv2.imwrite(output_path, img, [cv2.IMWRITE_JPEG_QUALITY, 95])
-    print(f"  💾 保存: {output_path}")
+    os.makedirs(os.path.dirname(dst) if os.path.dirname(dst) else '.', exist_ok=True)
+    cv2.imwrite(dst, img, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    print(f"  -> {dst}")
     return True
 
 
-def process_folder(folder_path: str, output_folder: str,
-                   mode: str, blur_level: int, bg_blur: int, debug: bool):
-    """フォルダ内の画像を一括処理"""
-    extensions = ('.jpg', '.jpeg', '.png', '.webp')
-    files = [f for f in os.listdir(folder_path) if f.lower().endswith(extensions)]
-
+def process_folder(src_dir, dst_dir, stamps, size_pct, style, auto):
+    exts = ('.jpg', '.jpeg', '.png', '.webp')
+    files = [f for f in os.listdir(src_dir) if f.lower().endswith(exts)]
     if not files:
-        print(f"❌ 画像ファイルが見つかりません: {folder_path}")
+        print(f"画像が見つかりません: {src_dir}")
         return
-
-    print(f"📁 {len(files)} 枚の画像を処理します...\n")
-    os.makedirs(output_folder, exist_ok=True)
-
-    success = 0
-    for filename in files:
-        input_path = os.path.join(folder_path, filename)
-        name, ext = os.path.splitext(filename)
-        suffix = '_debug' if debug else f'_{mode}'
-        output_path = os.path.join(output_folder, f"{name}{suffix}{ext}")
-        print(f"🖼  {filename}")
-        if process_image(input_path, output_path, mode, blur_level, bg_blur, debug):
-            success += 1
-        print()
-
-    print(f"✅ 完了！ {success}/{len(files)} 枚処理しました")
-    print(f"📂 出力先: {output_folder}")
+    os.makedirs(dst_dir, exist_ok=True)
+    ok = 0
+    for f in files:
+        name, ext = os.path.splitext(f)
+        print(f"\n[{f}]")
+        if process(os.path.join(src_dir, f),
+                   os.path.join(dst_dir, f"{name}_stamp{ext}"),
+                   stamps, size_pct, style, auto):
+            ok += 1
+    print(f"\n完了: {ok}/{len(files)} 枚 → {dst_dir}")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='子どもの写真の顔・背景をぼかすツール',
+    p = argparse.ArgumentParser(
+        description='顔スタンプ・ぼかしツール',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-モード:
-  face  顔だけぼかす（デフォルト）
-  bg    背景だけぼかす
-  both  顔＋背景 両方ぼかす（プライバシー最強）
-
-使用例:
-  python tools/blur_faces.py photo.jpg
-  python tools/blur_faces.py photo.jpg --mode both
-  python tools/blur_faces.py photos/ --mode both
-  python tools/blur_faces.py photo.jpg --debug
+例:
+  py tools/blur_faces.py 写真.jpg --stamp 25 18
+  py tools/blur_faces.py 写真.jpg --stamp 25 18 --style mosaic
+  py tools/blur_faces.py 写真.jpg --stamp 25 18 --stamp 60 20
+  py tools/blur_faces.py 写真.jpg --auto
+  py tools/blur_faces.py photos/ --auto --style mosaic
         """
     )
-    parser.add_argument('input', help='画像ファイルまたはフォルダのパス')
-    parser.add_argument('--output', '-o', help='出力先（省略時は自動命名）')
-    parser.add_argument('--mode', '-m', choices=['face', 'bg', 'both'], default='face',
-                        help='処理モード: face/bg/both（デフォルト: face）')
-    parser.add_argument('--blur', '-b', type=int, default=55,
-                        help='顔ぼかし強度 10〜80（デフォルト: 55）')
-    parser.add_argument('--bg-blur', type=int, default=35,
-                        help='背景ぼかし強度 10〜60（デフォルト: 35）')
-    parser.add_argument('--debug', action='store_true',
-                        help='検出範囲を枠で表示（ぼかしなし・確認用）')
+    p.add_argument('input')
+    p.add_argument('--output', '-o')
+    p.add_argument('--stamp', nargs=2, type=float, metavar=('X%', 'Y%'),
+                   action='append', default=[],
+                   help='スタンプ位置を左から%%、上から%%で指定（複数指定可）')
+    p.add_argument('--size', type=float, default=18,
+                   help='スタンプサイズ（画像短辺に対する%%、デフォルト18）')
+    p.add_argument('--style', choices=['star', 'circle', 'mosaic'], default='star',
+                   help='スタンプ種類: star/circle/mosaic（デフォルト: star）')
+    p.add_argument('--auto', action='store_true',
+                   help='自動顔検出を使う（横顔は検出できないことがあります）')
+    args = p.parse_args()
 
-    args = parser.parse_args()
-
-    print("=" * 50)
-    print("  顔・背景ぼかしツール")
-    print("=" * 50)
-
-    if not HAS_MEDIAPIPE:
-        print()
-        print("⚠️  mediapipe が見つかりません（精度が落ちます）")
-        print("   pip install mediapipe  でインストールを推奨")
-
+    print("=" * 40)
+    print("  顔スタンプ・ぼかしツール")
+    print("=" * 40)
     print()
 
-    if args.debug:
-        print("🔍 デバッグモード: ぼかし処理なし、検出枠のみ表示")
+    if not args.stamp and not args.auto:
+        print("使い方:")
+        print("  手動: py tools/blur_faces.py 写真.jpg --stamp 25 18")
+        print("         ↑ 画像の左から25%、上から18%の位置にスタンプ")
+        print("  自動: py tools/blur_faces.py 写真.jpg --auto")
         print()
+        p.print_help()
+        return
 
     if os.path.isdir(args.input):
-        out_dir = args.output or os.path.join(args.input, 'blurred')
-        process_folder(args.input, out_dir, args.mode, args.blur, args.bg_blur, args.debug)
+        out = args.output or os.path.join(args.input, 'stamped')
+        process_folder(args.input, out, args.stamp, args.size, args.style, args.auto)
     elif os.path.isfile(args.input):
         name, ext = os.path.splitext(args.input)
-        suffix = '_debug' if args.debug else f'_{args.mode}'
-        output_path = args.output or f"{name}{suffix}{ext}"
-        print(f"🖼  {os.path.basename(args.input)}")
-        process_image(args.input, output_path, args.mode, args.blur, args.bg_blur, args.debug)
+        out = args.output or f"{name}_stamp{ext}"
+        process(args.input, out, args.stamp, args.size, args.style, args.auto)
     else:
-        print(f"❌ ファイルまたはフォルダが見つかりません: {args.input}")
+        print(f"見つかりません: {args.input}")
         sys.exit(1)
 
 
