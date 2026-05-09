@@ -32,7 +32,7 @@
 		0 16px 32px rgba(var(--gray), 33%);
 }
 body {
-	font-family: var(--font-atkinson);
+	font-family: 'Atkinson', sans-serif;
 	margin: 0;
 	padding: 0;
 	text-align: left;
@@ -145,6 +145,7 @@ hr {
 	height: 1px;
 	width: 1px;
 	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support 
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
