@@ -125,18 +125,18 @@ const categories = [...new Set(guides.map((g) => g.data.category))];
 			<h1>お悩み解決ガイド</h1>
 			<p class="subtitle">サイズ・素材・コーデ…パパ・ママの疑問をまとめて解決</p>
 
-			<div class="filter-bar">
-				<a href="/guides/" class="filter-btn active">すべて</a>
+			<div class="filter-bar" id="filter-bar">
+				<button class="filter-btn active" data-cat="">すべて</button>
 				{categories.map((cat) => (
-					<a href={`/guides/?category=${encodeURIComponent(cat)}`} class="filter-btn">{cat}</a>
+					<button class="filter-btn" data-cat={cat}>{cat}</button>
 				))}
 			</div>
 
-			<p class="count">{guides.length}件のガイド</p>
+			<p class="count" id="count">{guides.length}件のガイド</p>
 
-			<ul class="card-list">
+			<ul class="card-list" id="card-list">
 				{guides.map((post) => (
-					<li class="card">
+					<li class="card" data-category={post.data.category}>
 						<a href={`/guides/${post.id}/`}>
 							<div class="card-meta">
 								<span class="category-badge">{post.data.category}</span>
@@ -159,5 +159,35 @@ const categories = [...new Set(guides.map((g) => g.data.category))];
 			</ul>
 		</main>
 		<Footer />
+
+		<script>
+			const buttons = document.querySelectorAll<HTMLButtonElement>('#filter-bar .filter-btn');
+			const cards = document.querySelectorAll<HTMLElement>('#card-list .card');
+			const countEl = document.getElementById('count');
+
+			function applyFilter(cat: string) {
+				let visible = 0;
+				cards.forEach((card) => {
+					const match = !cat || card.dataset.category === cat;
+					(card as HTMLElement).style.display = match ? '' : 'none';
+					if (match) visible++;
+				});
+				if (countEl) countEl.textContent = `${visible}件のガイド`;
+
+				buttons.forEach((btn) => {
+					btn.classList.toggle('active', btn.dataset.cat === cat);
+				});
+			}
+
+			buttons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					applyFilter(btn.dataset.cat ?? '');
+				});
+			});
+
+			const params = new URLSearchParams(location.search);
+			const initCat = params.get('category') ?? '';
+			applyFilter(initCat);
+		</script>
 	</body>
 </html>
