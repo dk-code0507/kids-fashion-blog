@@ -1,0 +1,39 @@
+---
+/**
+ * RakutenWidget.astro
+ * 楽天アフィリエイトの「画像＋テキスト」HTMLウィジェットをラップして表示。
+ * 使い方（MDXファイル内）:
+ *
+ *   import RakutenWidget from '../../components/RakutenWidget.astro';
+ *
+ *   <RakutenWidget html={`ここに楽天のHTMLをそのまま貼り付け`} />
+ */
+
+interface Props {
+	html: string;
+}
+const { html } = Astro.props;
+---
+
+<div class="rakuten-widget-wrap">
+	<Fragment set:html={html} />
+	<p class="rakuten-widget-note">※ 本リンクはアフィリエイトリンクです。リンク経由でご購入いただいても、お客様の購入価格は変わりません。</p>
+</div>
+
+<style>
+	.rakuten-widget-wrap {
+		margin: 1.8em 0;
+		overflow-x: auto;
+	}
+	.rakuten-widget-wrap :global(div[style*="border"]) {
+		max-width: 100% !important;
+		width: 100% !important;
+		box-sizing: border-box;
+		border-radius: 10px !important;
+	}
+	.rakuten-widget-note {
+		font-size: 0.68em;
+		color: #bbb;
+		margin: 0.3em 0 0;
+	}
+</style>

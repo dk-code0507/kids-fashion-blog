@@ -1,15 +1,16 @@
 ---
 /**
  * AffiliateCTA.astro
- * アフィリエイトリンクを整形して表示するコンポーネント。
+ * 商品画像＋アフィリエイトリンクを横並びで表示するコンポーネント。
  * 使い方:
  *   <AffiliateCTA
- *     title="GAPブラナンベアパーカーを見る"
+ *     title="レゴ デュプロの価格を確認する"
+ *     image="https://images.unsplash.com/..."   // 省略可
  *     links={{
- *       gap: { url: "https://...", label: "GAP公式" },
  *       rakuten: { url: "https://...", label: "楽天市場" },
  *       amazon: { url: "https://...", label: "Amazon" },
  *     }}
+ *     note="誕生日プレゼントにも人気"
  *   />
  */
 
@@ -20,6 +21,7 @@ interface AffiliateLink {
 
 interface Props {
 	title?: string;
+	image?: string;
 	links: {
 		gap?: AffiliateLink;
 		rakuten?: AffiliateLink;
@@ -31,23 +33,30 @@ interface Props {
 
 const {
 	title = '購入・価格を確認する',
+	image,
 	links,
 	note,
 } = Astro.props;
 
 const allLinks = [
 	links.gap && { ...links.gap, icon: '🏪', color: '#004F93' },
-	links.rakuten && { ...links.rakuten, icon: '🦅', color: '#BF0000' },
+	links.rakuten && { ...links.rakuten, icon: '🛒', color: '#BF0000' },
 	links.amazon && { ...links.amazon, icon: '📦', color: '#FF9900' },
 	...(links.other ?? []).map((l) => ({ ...l, icon: '🔗', color: '#555' })),
 ].filter(Boolean);
 ---
 
-<div class="affiliate-cta">
-	<p class="affiliate-cta__title">{title}</p>
-	<div class="affiliate-cta__links">
-		{
-			allLinks.map((link) => (
+<div class={`affiliate-cta${image ? ' has-image' : ''}`}>
+	{image && (
+		<div class="affiliate-cta__img-wrap">
+			<img src={image} alt={title} loading="lazy" />
+		</div>
+	)}
+	<div class="affiliate-cta__body">
+		<p class="affiliate-cta__title">{title}</p>
+		{note && <p class="affiliate-cta__note">{note}</p>}
+		<div class="affiliate-cta__links">
+			{allLinks.map((link) => (
 				<a
 					href={link!.url}
 					target="_blank"
@@ -58,34 +67,65 @@ const allLinks = [
 					<span class="affiliate-cta__icon">{link!.icon}</span>
 					{link!.label}で見る
 				</a>
-			))
-		}
+			))}
+		</div>
+		<p class="affiliate-cta__disclosure">※ 本リンクはアフィリエイトリンクです。リンク経由でご購入いただいても、お客様の購入価格は変わりません。</p>
 	</div>
-	{note && <p class="affiliate-cta__note">{note}</p>}
-	<p class="affiliate-cta__disclosure">※ 本リンクはアフィリエイトリンクです。リンク経由でご購入いただくと、サイト運営者に紹介料が支払われます（お客様の購入価格は変わりません）。</p>
 </div>
 
 <style>
 	.affiliate-cta {
 		background: #fffbf2;
 		border: 2px solid #f5a623;
-		border-radius: 10px;
+		border-radius: 12px;
 		padding: 1.2em 1.4em;
 		margin: 2em 0;
+		display: flex;
+		gap: 1.2em;
+		align-items: center;
+	}
+
+	/* 画像あり */
+	.affiliate-cta__img-wrap {
+		flex-shrink: 0;
+		width: 120px;
+		height: 120px;
+		border-radius: 8px;
+		overflow: hidden;
+		background: #f5f5f5;
+	}
+	.affiliate-cta__img-wrap img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.affiliate-cta__body {
+		flex: 1;
+		min-width: 0;
 	}
 
 	.affiliate-cta__title {
 		font-weight: bold;
-		font-size: 1em;
-		margin: 0 0 0.8em;
+		font-size: 0.97em;
+		margin: 0 0 0.5em;
 		color: #333;
+		line-height: 1.4;
+	}
+
+	.affiliate-cta__note {
+		font-size: 0.83em;
+		color: #666;
+		margin: 0 0 0.7em;
+		line-height: 1.5;
 	}
 
 	.affiliate-cta__links {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.6em;
-		margin-bottom: 0.8em;
+		gap: 0.5em;
+		margin-bottom: 0.6em;
 	}
 
 	.affiliate-cta__btn {
@@ -95,11 +135,12 @@ const allLinks = [
 		background: var(--btn-color, #555);
 		color: #fff;
 		text-decoration: none;
-		padding: 0.5em 1.2em;
+		padding: 0.45em 1.1em;
 		border-radius: 6px;
-		font-size: 0.9em;
+		font-size: 0.85em;
 		font-weight: bold;
 		transition: opacity 0.2s;
+		white-space: nowrap;
 	}
 
 	.affiliate-cta__btn:hover {
@@ -107,19 +148,24 @@ const allLinks = [
 	}
 
 	.affiliate-cta__icon {
-		font-size: 1.1em;
-	}
-
-	.affiliate-cta__note {
-		font-size: 0.85em;
-		color: #555;
-		margin: 0.5em 0;
+		font-size: 1em;
 	}
 
 	.affiliate-cta__disclosure {
-		font-size: 0.72em;
-		color: #aaa;
+		font-size: 0.68em;
+		color: #bbb;
 		margin: 0;
 		line-height: 1.5;
+	}
+
+	@media (max-width: 480px) {
+		.affiliate-cta {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+		.affiliate-cta__img-wrap {
+			width: 100%;
+			height: 160px;
+		}
 	}
 </style>
