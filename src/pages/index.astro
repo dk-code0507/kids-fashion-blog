@@ -317,7 +317,7 @@ const categoryMap: Record<string, string[]> = {
 
 		<div class="hero">
 			<span class="hero-icon">👶</span>
-			<h1>こどもふく図鑑</h1>
+			<h1>こそだて図鑑</h1>
 			<p>1〜3歳の子ども服・おもちゃ・絵本を実際に使って正直レビュー。<br />パパ・ママが知りたいことを全部まとめました。</p>
 			<div class="hero-tags">
 				<span class="hero-tag">🧥 アウター</span>
@@ -358,11 +358,16 @@ const categoryMap: Record<string, string[]> = {
 						return (
 							<div class="review-card" data-cat-group={catGroup}>
 								<a href={`/reviews/${post.id}/`}>
-									<div class="card-thumb">
+									<div class="card-thumb" data-emoji={emoji}>
 										{post.data.thumbnail
-											? <img src={post.data.thumbnail} alt={post.data.title} loading="lazy" />
-											: <span>{emoji}</span>
-										}
+											? <img
+													src={post.data.thumbnail}
+													alt={post.data.title}
+													loading="lazy"
+													onerror="this.style.display='none'; this.parentElement.querySelector('.thumb-fallback').style.display='block';"
+												/>
+											: null}
+										<span class="thumb-fallback" style={post.data.thumbnail ? "display:none" : ""}>{emoji}</span>
 									</div>
 									<div class="card-body">
 										<div class="card-meta">
