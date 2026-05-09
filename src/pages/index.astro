@@ -11,6 +11,38 @@ const reviews = (await getCollection('reviews')).sort(
 const guides = (await getCollection('guides')).sort(
 	(a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+
+// カテゴリ別の絵文字マッピング
+const categoryEmoji: Record<string, string> = {
+	'アウター・パーカー': '🧥',
+	'ボトムス・パンツ': '👖',
+	'肌着・インナー': '👕',
+	'雨の日グッズ・アウター': '☔',
+	'トップス': '👚',
+	'ワンピース': '👗',
+	'サイズ・フィット': '📏',
+	'素材・安全性': '🌿',
+	'コーディネート・枚数': '👒',
+	'おもちゃ・知育玩具': '🧸',
+	'絵本・知育グッズ': '📚',
+	'お風呂おもちゃ': '🛁',
+};
+
+// カテゴリナビ定義
+const navCategories = [
+	{ label: 'すべて', value: 'all', emoji: '✨' },
+	{ label: '子ども服', value: 'clothes', emoji: '👕' },
+	{ label: 'おもちゃ', value: 'toy', emoji: '🧸' },
+	{ label: '絵本・知育', value: 'book', emoji: '📚' },
+	{ label: 'お風呂', value: 'bath', emoji: '🛁' },
+];
+
+const categoryMap: Record<string, string[]> = {
+	clothes: ['アウター・パーカー', 'ボトムス・パンツ', '肌着・インナー', '雨の日グッズ・アウター', 'トップス', 'ワンピース'],
+	toy: ['おもちゃ・知育玩具'],
+	book: ['絵本・知育グッズ'],
+	bath: ['お風呂おもちゃ'],
+};
 ---
 
 <!doctype html>
@@ -18,60 +50,195 @@ const guides = (await getCollection('guides')).sort(
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
-			main {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: 2em auto;
-				padding: 0 1em;
-			}
+			/* ===== Hero ===== */
 			.hero {
+				background: linear-gradient(135deg, #fff8f0 0%, #fff3e0 100%);
+				padding: 3em 1em 2.5em;
 				text-align: center;
-				padding: 2em 0;
-				border-bottom: 1px solid #eee;
-				margin-bottom: 2em;
+				border-bottom: 1px solid #f0e0cc;
+			}
+			.hero-icon {
+				font-size: 3em;
+				display: block;
+				margin-bottom: 0.3em;
 			}
 			.hero h1 {
-				font-size: 1.8em;
-				margin-bottom: 0.5em;
+				font-size: 2em;
+				color: #333;
+				margin: 0 0 0.5em;
 			}
 			.hero p {
 				color: #666;
+				font-size: 0.95em;
+				line-height: 1.8;
+				max-width: 480px;
+				margin: 0 auto 1.5em;
+			}
+			.hero-tags {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 0.5em;
+			}
+			.hero-tag {
+				background: #fff;
+				border: 1px solid #f5a623;
+				color: #f5a623;
+				border-radius: 20px;
+				padding: 0.3em 0.9em;
+				font-size: 0.8em;
+			}
+
+			/* ===== Category Nav ===== */
+			.category-nav {
+				background: #fff;
+				border-bottom: 1px solid #eee;
+				position: sticky;
+				top: 0;
+				z-index: 10;
+			}
+			.category-nav-inner {
+				max-width: 780px;
+				margin: 0 auto;
+				padding: 0 1em;
+				display: flex;
+				gap: 0.3em;
+				overflow-x: auto;
+				scrollbar-width: none;
+			}
+			.category-nav-inner::-webkit-scrollbar {
+				display: none;
+			}
+			.cat-btn {
+				flex-shrink: 0;
+				background: none;
+				border: none;
+				cursor: pointer;
+				padding: 0.8em 1em;
+				font-size: 0.85em;
+				color: #888;
+				border-bottom: 3px solid transparent;
+				white-space: nowrap;
+				transition: color 0.2s, border-color 0.2s;
+			}
+			.cat-btn:hover {
+				color: #f5a623;
+			}
+			.cat-btn.active {
+				color: #f5a623;
+				border-bottom-color: #f5a623;
+				font-weight: bold;
+			}
+
+			/* ===== Main Layout ===== */
+			.container {
+				max-width: 780px;
+				margin: 0 auto;
+				padding: 0 1em;
+			}
+
+			/* ===== Section ===== */
+			.section {
+				padding: 2.5em 0;
+				border-bottom: 1px solid #f0f0f0;
+			}
+			.section:last-child {
+				border-bottom: none;
+			}
+			.section-header {
+				display: flex;
+				align-items: baseline;
+				justify-content: space-between;
+				margin-bottom: 1.2em;
 			}
 			.section-title {
-				font-size: 1.3em;
+				font-size: 1.2em;
 				font-weight: bold;
-				margin: 2em 0 1em;
-				padding-left: 0.6em;
+				color: #333;
+				padding-left: 0.7em;
 				border-left: 4px solid #f5a623;
+				margin: 0;
 			}
-			.card-list {
-				list-style: none;
-				padding: 0;
+			.section-link {
+				font-size: 0.85em;
+				color: #f5a623;
+				text-decoration: none;
+			}
+			.section-link:hover {
+				text-decoration: underline;
+			}
+
+			/* ===== Review Cards ===== */
+			.review-grid {
 				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 				gap: 1em;
 			}
-			.card {
-				border: 1px solid #e8e8e8;
-				border-radius: 8px;
-				padding: 1em 1.2em;
-				transition: box-shadow 0.2s;
+			.review-card {
+				border: 1px solid #eee;
+				border-radius: 12px;
+				overflow: hidden;
+				transition: box-shadow 0.2s, transform 0.2s;
+				background: #fff;
 			}
-			.card:hover {
-				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			.review-card[data-cat-group="hidden"] {
+				display: none;
 			}
-			.card a {
+			.review-card:hover {
+				box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+				transform: translateY(-2px);
+			}
+			.review-card a {
 				text-decoration: none;
 				color: inherit;
+				display: block;
+			}
+			.card-thumb {
+				width: 100%;
+				aspect-ratio: 16/9;
+				background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 3em;
+				overflow: hidden;
+			}
+			.card-thumb img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+			}
+			.card-body {
+				padding: 0.8em 1em;
 			}
 			.card-meta {
-				font-size: 0.8em;
-				color: #999;
-				margin-bottom: 0.3em;
+				display: flex;
+				align-items: center;
+				gap: 0.5em;
+				margin-bottom: 0.4em;
+			}
+			.card-category {
+				font-size: 0.72em;
+				background: #fff3e0;
+				color: #f5a623;
+				border-radius: 4px;
+				padding: 0.1em 0.5em;
+			}
+			.card-rating {
+				font-size: 0.78em;
+				color: #f5a623;
+				font-weight: bold;
+				margin-left: auto;
 			}
 			.card-title {
-				font-size: 1em;
+				font-size: 0.88em;
 				font-weight: bold;
-				margin: 0 0 0.3em;
+				line-height: 1.4;
+				color: #333;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
 			}
 			.card-tags {
 				display: flex;
@@ -80,89 +247,210 @@ const guides = (await getCollection('guides')).sort(
 				margin-top: 0.5em;
 			}
 			.tag {
-				background: #f0f0f0;
+				background: #f5f5f5;
 				border-radius: 4px;
-				padding: 0.1em 0.5em;
+				padding: 0.1em 0.4em;
+				font-size: 0.7em;
+				color: #666;
+			}
+
+			/* ===== Guide List ===== */
+			.guide-list {
+				display: flex;
+				flex-direction: column;
+				gap: 0.8em;
+			}
+			.guide-item {
+				display: flex;
+				align-items: center;
+				gap: 1em;
+				padding: 1em 1.2em;
+				border: 1px solid #eee;
+				border-radius: 10px;
+				background: #fff;
+				text-decoration: none;
+				color: inherit;
+				transition: box-shadow 0.2s;
+			}
+			.guide-item:hover {
+				box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+			}
+			.guide-icon {
+				font-size: 2em;
+				flex-shrink: 0;
+			}
+			.guide-body {}
+			.guide-category {
 				font-size: 0.75em;
-				color: #555;
-			}
-			.rating {
-				color: #f5a623;
-				font-size: 0.85em;
-			}
-			.empty {
 				color: #aaa;
-				font-style: italic;
+				margin-bottom: 0.2em;
+			}
+			.guide-title {
+				font-size: 0.92em;
+				font-weight: bold;
+				line-height: 1.4;
+				color: #333;
+			}
+
+			/* ===== Empty state ===== */
+			.empty-state {
+				text-align: center;
+				padding: 2em;
+				color: #aaa;
+				font-size: 0.9em;
+				display: none;
+			}
+			.empty-state.visible {
+				display: block;
+			}
+
+			@media (max-width: 640px) {
+				.hero h1 { font-size: 1.5em; }
+				.review-grid {
+					grid-template-columns: repeat(2, 1fr);
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section class="hero">
-				<h1>こどもふく図鑑</h1>
-				<p>1〜3歳の子ども服を実際に着せて正直レビュー。<br />サイズ・素材・コスパ、パパ・ママが知りたいことを全部まとめました。</p>
-			</section>
 
-			<h2 class="section-title">最新レビュー</h2>
-			{
-				reviews.length === 0 ? (
-					<p class="empty">レビュー記事はまだありません。</p>
-				) : (
-					<ul class="card-list">
-						{reviews.slice(0, 5).map((post) => (
-							<li class="card">
+		<div class="hero">
+			<span class="hero-icon">👶</span>
+			<h1>こどもふく図鑑</h1>
+			<p>1〜3歳の子ども服・おもちゃ・絵本を実際に使って正直レビュー。<br />パパ・ママが知りたいことを全部まとめました。</p>
+			<div class="hero-tags">
+				<span class="hero-tag">🧥 アウター</span>
+				<span class="hero-tag">🧸 おもちゃ</span>
+				<span class="hero-tag">📚 絵本・知育</span>
+				<span class="hero-tag">🛁 お風呂</span>
+				<span class="hero-tag">📏 サイズガイド</span>
+			</div>
+		</div>
+
+		<!-- カテゴリナビ -->
+		<nav class="category-nav">
+			<div class="category-nav-inner">
+				{navCategories.map((cat) => (
+					<button class={`cat-btn${cat.value === 'all' ? ' active' : ''}`} data-cat={cat.value}>
+						{cat.emoji} {cat.label}
+					</button>
+				))}
+			</div>
+		</nav>
+
+		<div class="container">
+			<!-- 最新レビュー -->
+			<section class="section">
+				<div class="section-header">
+					<h2 class="section-title">最新レビュー</h2>
+					<a href="/reviews/" class="section-link">すべて見る →</a>
+				</div>
+				<div class="review-grid" id="review-grid">
+					{reviews.map((post) => {
+						const emoji = categoryEmoji[post.data.category] ?? '👕';
+						// カテゴリグループを計算
+						let catGroup = 'clothes';
+						if (categoryMap.toy.includes(post.data.category)) catGroup = 'toy';
+						else if (categoryMap.book.includes(post.data.category)) catGroup = 'book';
+						else if (categoryMap.bath.includes(post.data.category)) catGroup = 'bath';
+
+						return (
+							<div class="review-card" data-cat-group={catGroup}>
 								<a href={`/reviews/${post.id}/`}>
-									<div class="card-meta">
-										{post.data.category} &nbsp;·&nbsp;
-										{post.data.date.toLocaleDateString('ja-JP')}
-										{post.data.rating && (
-											<span class="rating"> ★{post.data.rating}</span>
+									<div class="card-thumb">
+										{post.data.thumbnail
+											? <img src={post.data.thumbnail} alt={post.data.title} loading="lazy" />
+											: <span>{emoji}</span>
+										}
+									</div>
+									<div class="card-body">
+										<div class="card-meta">
+											<span class="card-category">{post.data.category}</span>
+											{post.data.rating && <span class="card-rating">★{post.data.rating}</span>}
+										</div>
+										<p class="card-title">{post.data.title}</p>
+										{post.data.tags.length > 0 && (
+											<div class="card-tags">
+												{post.data.tags.slice(0, 3).map((tag) => (
+													<span class="tag">{tag}</span>
+												))}
+											</div>
 										)}
 									</div>
-									<p class="card-title">{post.data.title}</p>
-									{post.data.tags.length > 0 && (
-										<div class="card-tags">
-											{post.data.tags.map((tag) => (
-												<span class="tag">{tag}</span>
-											))}
-										</div>
-									)}
 								</a>
-							</li>
-						))}
-					</ul>
-				)
-			}
+							</div>
+						);
+					})}
+				</div>
+				<p class="empty-state" id="empty-state">このカテゴリのレビューはまだありません。</p>
+			</section>
 
-			<h2 class="section-title">お悩み解決ガイド</h2>
-			{
-				guides.length === 0 ? (
-					<p class="empty">ガイド記事はまだありません。</p>
-				) : (
-					<ul class="card-list">
-						{guides.slice(0, 5).map((post) => (
-							<li class="card">
-								<a href={`/guides/${post.id}/`}>
-									<div class="card-meta">
-										{post.data.category} &nbsp;·&nbsp;
-										{post.data.date.toLocaleDateString('ja-JP')}
-									</div>
-									<p class="card-title">{post.data.title}</p>
-									{post.data.tags.length > 0 && (
-										<div class="card-tags">
-											{post.data.tags.map((tag) => (
-												<span class="tag">{tag}</span>
-											))}
-										</div>
-									)}
-								</a>
-							</li>
-						))}
-					</ul>
-				)
-			}
-		</main>
+			<!-- お悩み解決ガイド -->
+			<section class="section">
+				<div class="section-header">
+					<h2 class="section-title">お悩み解決ガイド</h2>
+					<a href="/guides/" class="section-link">すべて見る →</a>
+				</div>
+				<div class="guide-list">
+					{guides.slice(0, 4).map((post) => {
+						const emoji = categoryEmoji[post.data.category] ?? '💡';
+						return (
+							<a href={`/guides/${post.id}/`} class="guide-item">
+								<span class="guide-icon">{emoji}</span>
+								<div class="guide-body">
+									<p class="guide-category">{post.data.category}</p>
+									<p class="guide-title">{post.data.title}</p>
+								</div>
+							</a>
+						);
+					})}
+				</div>
+			</section>
+		</div>
+
 		<Footer />
+
+		<script>
+			// カテゴリフィルター
+			const categoryMap: Record<string, string[]> = {
+				all: [],
+				clothes: ['clothes'],
+				toy: ['toy'],
+				book: ['book'],
+				bath: ['bath'],
+			};
+
+			const buttons = document.querySelectorAll<HTMLButtonElement>('.cat-btn');
+			const cards = document.querySelectorAll<HTMLElement>('.review-card');
+			const emptyState = document.getElementById('empty-state');
+
+			buttons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const cat = btn.dataset.cat ?? 'all';
+
+					// ボタンのアクティブ状態を更新
+					buttons.forEach((b) => b.classList.remove('active'));
+					btn.classList.add('active');
+
+					// カードの表示・非表示
+					let visibleCount = 0;
+					cards.forEach((card) => {
+						const group = card.dataset.catGroup ?? '';
+						if (cat === 'all' || group === cat) {
+							card.style.display = '';
+							visibleCount++;
+						} else {
+							card.style.display = 'none';
+						}
+					});
+
+					// 空状態の表示
+					if (emptyState) {
+						emptyState.classList.toggle('visible', visibleCount === 0);
+					}
+				});
+			});
+		</script>
 	</body>
 </html>
