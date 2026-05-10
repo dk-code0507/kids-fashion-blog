@@ -21,6 +21,9 @@ description: "レゴ デュプロ クラシックを1〜3歳に実際に遊ば�
 ---
 
 import AffiliateCTA from '../../components/AffiliateCTA.astro';
+import RakutenWidget from '../../components/RakutenWidget.astro';
+
+export const rakutenHtml = `<table border="0" cellpadding="0" cellspacing="0"><tr><td><div style="border:1px solid #95a5a6;border-radius:.75rem;background-color:#FFFFFF;width:504px;margin:0px;padding:5px;text-align:center;overflow:hidden;"><table><tr><td style="width:240px"><a href="https://hb.afl.rakuten.co.jp/ichiba/539ef9d7.3bbd1448.539ef9d8.09da1b07/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fnetbaby%2F5702016617757%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><img src="https://hbb.afl.rakuten.co.jp/hgb/539ef9d7.3bbd1448.539ef9d8.09da1b07/?me_id=1212232&item_id=10042143&pc=https%3A%2F%2Fimage.rakuten.co.jp%2Fnetbaby%2Fcabinet%2F757%2F5702016617757-4.jpg%3F_ex%3D240x240&s=240x240&t=picttext" border="0" style="margin:2px" alt="[商品価格に関しましては、リンクが作成された時点と現時点で情報が変更されている場合がございます。]" title="[商品価格に関しましては、リンクが作成された時点と現時点で情報が変更されている場合がございます。]"></a></td><td style="vertical-align:top;width:248px;display: block;"><p style="font-size:12px;line-height:1.4em;text-align:left;margin:0px;padding:2px 6px;word-wrap:break-word"><a href="https://hb.afl.rakuten.co.jp/ichiba/539ef9d7.3bbd1448.539ef9d8.09da1b07/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fnetbaby%2F5702016617757%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;">レゴ(LEGO) デュプロ デュプロのコンテナ スーパーデラックス 10914(1セット)【レゴ(LEGO)】[おもちゃ 玩具 プレゼント 1歳半 2歳 3歳]</a><br><span >価格：5,729円（税込、送料無料)</span> <span style="color:#BBB">(2026/5/9時点)</span></p><div style="margin:10px;"><a href="https://hb.afl.rakuten.co.jp/ichiba/539ef9d7.3bbd1448.539ef9d8.09da1b07/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fnetbaby%2F5702016617757%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><img src="https://static.affiliate.rakuten.co.jp/makelink/rl.svg" style="float:left;max-height:27px;width:auto;margin-top:0" ></a><a href="https://hb.afl.rakuten.co.jp/ichiba/539ef9d7.3bbd1448.539ef9d8.09da1b07/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fnetbaby%2F5702016617757%2F%3Fscid%3Daf_pc_bbtn&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ==" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><div style="float:right;width:41%;height:27px;background-color:#bf0000;color:#fff!important;font-size:12px;font-weight:500;line-height:27px;margin-left:1px;padding: 0 12px;border-radius:16px;cursor:pointer;text-align:center;"> 楽天で購入 </div></a></div></td></tr></table></div><br><p style="color:#000000;font-size:12px;line-height:1.4em;margin:5px;word-wrap:break-word"></p></td></tr></table>`;
 
 「ブロックっていつから与えていい？」「誤飲が怖い」「どのセットを選べばいいの？」
 
@@ -115,15 +118,7 @@ ABS樹脂製で非常に丈夫。洗えるし、10年前のレゴとも互換性
 
 ---
 
-<AffiliateCTA
-  title="レゴ デュプロ クラシック｜価格を確認する"
-  image="https://images.unsplash.com/photo-1484820540004-14229fe36ca4?w=300&q=80&auto=format&fit=crop"
-  links={{
-    amazon: { url: "https://www.amazon.co.jp/s?k=%E3%83%AC%E3%82%B4+%E3%83%87%E3%83%A5%E3%83%97%E3%83%AD+%E3%82%AF%E3%83%A9%E3%82%B7%E3%83%83%E3%82%AF", label: "Amazon" },
-    rakuten: { url: "https://hb.afl.rakuten.co.jp/ichiba/539ef9d7.3bbd1448.539ef9d8.09da1b07/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fnetbaby%2F5702016617757%2F&link_type=hybrid_url&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "楽天市場" },
-  }}
-  note="誕生日・クリスマスプレゼントの定番！セット買いでまとめ割引もあります"
-/>
+<RakutenWidget html={rakutenHtml} />
 
 ---
 
@@ -144,13 +139,7 @@ ABS樹脂製で非常に丈夫。洗えるし、10年前のレゴとも互換性
 
 レゴ デュプロは1〜3歳のおもちゃとして間違いなくトップクラスの選択肢です。安全性・知育効果・長く使える耐久性の三拍子が揃っています。初めてのブロックとして「クラシック」からスタートして、年齢に合わせてセットを追加するのがおすすめです。
 
-<AffiliateCTA
-  title="レゴ デュプロをチェックする"
-  links={{
-    amazon: { url: "https://www.amazon.co.jp/s?k=%E3%83%AC%E3%82%B4+%E3%83%87%E3%83%A5%E3%83%97%E3%83%AD+%E3%82%AF%E3%83%A9%E3%82%B7%E3%83%83%E3%82%AF", label: "Amazon" },
-    rakuten: { url: "https://hb.afl.rakuten.co.jp/ichiba/539ef9d7.3bbd1448.539ef9d8.09da1b07/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fnetbaby%2F5702016617757%2F&link_type=hybrid_url&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9", label: "楽天市場" },
-  }}
-/>
+<RakutenWidget html={rakutenHtml} />
 
 ---
 

@@ -22,6 +22,9 @@ description: "マンチキンのお風呂おもちゃを1〜3歳に使ったレ�
 ---
 
 import AffiliateCTA from '../../components/AffiliateCTA.astro';
+import RakutenWidget from '../../components/RakutenWidget.astro';
+
+export const rakutenHtml = `<table border="0" cellpadding="0" cellspacing="0"><tr><td><div style="border:1px solid #95a5a6;border-radius:.75rem;background-color:#FFFFFF;width:504px;margin:0px;padding:5px;text-align:center;overflow:hidden;"><table><tr><td style="width:240px"><a href="https://hb.afl.rakuten.co.jp/ichiba/539f2d71.b6d54bfb.539f2d72.ab000ed8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Forange-baby%2F0735282110207%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><img src="https://hbb.afl.rakuten.co.jp/hgb/539f2d71.b6d54bfb.539f2d72.ab000ed8/?me_id=1201017&item_id=10035279&pc=https%3A%2F%2Fthumbnail.image.rakuten.co.jp%2F%400_mall%2Forange-baby%2Fcabinet%2Fdadway2%2F0735282110207x.jpg%3F_ex%3D240x240&s=240x240&t=picttext" border="0" style="margin:2px" alt="マンチキン ラーニング・バスレター"></a></td><td style="vertical-align:top;width:248px;display: block;"><p style="font-size:12px;line-height:1.4em;text-align:left;margin:0px;padding:2px 6px;word-wrap:break-word"><a href="https://hb.afl.rakuten.co.jp/ichiba/539f2d71.b6d54bfb.539f2d72.ab000ed8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Forange-baby%2F0735282110207%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;">マンチキン ラーニング・バスレター NZMU11020 MUNCHKIN</a><br><span>価格：1,330円（税込、送料別)</span> <span style="color:#BBB">(2026/5/9時点)</span></p><div style="margin:10px;"><a href="https://hb.afl.rakuten.co.jp/ichiba/539f2d71.b6d54bfb.539f2d72.ab000ed8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Forange-baby%2F0735282110207%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><img src="https://static.affiliate.rakuten.co.jp/makelink/rl.svg" style="float:left;max-height:27px;width:auto;margin-top:0"></a><a href="https://hb.afl.rakuten.co.jp/ichiba/539f2d71.b6d54bfb.539f2d72.ab000ed8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Forange-baby%2F0735282110207%2F%3Fscid%3Daf_pc_bbtn&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ==" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><div style="float:right;width:41%;height:27px;background-color:#bf0000;color:#fff!important;font-size:12px;font-weight:500;line-height:27px;margin-left:1px;padding: 0 12px;border-radius:16px;cursor:pointer;text-align:center;"> 楽天で購入 </div></a></div></td></tr></table></div><br><p style="color:#000000;font-size:12px;line-height:1.4em;margin:5px;word-wrap:break-word"></p></td></tr></table>`;
 
 キャラクターもののお風呂おもちゃは飽きたら終わり——でも**マンチキン**は違います。シンプルなデザインだからこそ長く愛用でき、しかも知育要素が詰まっている。1〜3歳の親御さんに根強く人気の理由を解説します。
 
@@ -119,14 +122,7 @@ import AffiliateCTA from '../../components/AffiliateCTA.astro';
 
 ---
 
-<AffiliateCTA
-  title="マンチキン お風呂おもちゃの価格を確認する"
-  links={{
-    amazon: { url: "https://www.amazon.co.jp/s?k=%E3%83%9E%E3%83%B3%E3%83%81%E3%82%AD%E3%83%B3+%E3%81%8A%E9%A2%A8%E5%91%82", label: "Amazon" },
-    rakuten: { url: "https://search.rakuten.co.jp/search/mall/%E3%83%9E%E3%83%B3%E3%83%81%E3%82%AD%E3%83%B3+%E3%81%8A%E9%A2%A8%E5%91%82/", label: "楽天市場" },
-  }}
-  note="海外ブランドならではのシンプルで洗練されたデザインが人気です"
-/>
+<RakutenWidget html={rakutenHtml} />
 
 ---
 
@@ -147,12 +143,6 @@ import AffiliateCTA from '../../components/AffiliateCTA.astro';
 
 マンチキンのお風呂おもちゃは「長く使えて、賢く育てる」設計が光ります。キャラクターものの熱が冷めてきた1歳半以降にぜひ取り入れてほしいブランドです。バスレターやフィッシュカラーチェンジャーは特におすすめで、お風呂がきっかけで文字や科学への興味が芽生えることも。
 
-<AffiliateCTA
-  title="マンチキン お風呂おもちゃをチェックする"
-  links={{
-    amazon: { url: "https://www.amazon.co.jp/s?k=%E3%83%9E%E3%83%B3%E3%83%81%E3%82%AD%E3%83%B3+%E3%81%8A%E9%A2%A8%E5%91%82", label: "Amazon" },
-    rakuten: { url: "https://search.rakuten.co.jp/search/mall/%E3%83%9E%E3%83%B3%E3%83%81%E3%82%AD%E3%83%B3+%E3%81%8A%E9%A2%A8%E5%91%82/", label: "楽天市場" },
-  }}
-/>
+<RakutenWidget html={rakutenHtml} />
 
 *※ 本記事にはアフィリエイトリンクが含まれます。*

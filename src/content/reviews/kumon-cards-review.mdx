@@ -21,6 +21,9 @@ description: "くもんの知育カード・パズルシリーズを2〜3歳に�
 ---
 
 import AffiliateCTA from '../../components/AffiliateCTA.astro';
+import RakutenWidget from '../../components/RakutenWidget.astro';
+
+export const rakutenHtml = `<table border="0" cellpadding="0" cellspacing="0"><tr><td><div style="border:1px solid #95a5a6;border-radius:.75rem;background-color:#FFFFFF;width:504px;margin:0px;padding:5px;text-align:center;overflow:hidden;"><table><tr><td style="width:240px"><a href="https://hb.afl.rakuten.co.jp/ichiba/1bb445be.786108dd.1bb445bf.a4eb6e94/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fbook%2F5193456%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><img src="https://hbb.afl.rakuten.co.jp/hgb/1bb445be.786108dd.1bb445bf.a4eb6e94/?me_id=1213310&item_id=12638598&pc=https%3A%2F%2Fthumbnail.image.rakuten.co.jp%2F%400_mall%2Fbook%2Fcabinet%2F3047%2F9784774313047_1_2.jpg%3F_ex%3D240x240&s=240x240&t=picttext" border="0" style="margin:2px" alt="くもん 生活図鑑カード"></a></td><td style="vertical-align:top;width:248px;display: block;"><p style="font-size:12px;line-height:1.4em;text-align:left;margin:0px;padding:2px 6px;word-wrap:break-word"><a href="https://hb.afl.rakuten.co.jp/ichiba/1bb445be.786108dd.1bb445bf.a4eb6e94/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fbook%2F5193456%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;">くもんの生活図鑑カード　くだもの　やさいカード　1集 [ 飯塚　宗夫 ]</a><br><span>価格：1,320円（税込、送料無料)</span> <span style="color:#BBB">(2026/5/9時点)</span></p><div style="margin:10px;"><a href="https://hb.afl.rakuten.co.jp/ichiba/1bb445be.786108dd.1bb445bf.a4eb6e94/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fbook%2F5193456%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><img src="https://static.affiliate.rakuten.co.jp/makelink/rl.svg" style="float:left;max-height:27px;width:auto;margin-top:0"></a><a href="https://hb.afl.rakuten.co.jp/ichiba/1bb445be.786108dd.1bb445bf.a4eb6e94/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fbook%2F5193456%2F%3Fscid%3Daf_pc_bbtn&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ==" target="_blank" rel="nofollow sponsored noopener" style="word-wrap:break-word;"><div style="float:right;width:41%;height:27px;background-color:#bf0000;color:#fff!important;font-size:12px;font-weight:500;line-height:27px;margin-left:1px;padding: 0 12px;border-radius:16px;cursor:pointer;text-align:center;"> 楽天で購入 </div></a></div></td></tr></table></div><br><p style="color:#000000;font-size:12px;line-height:1.4em;margin:5px;word-wrap:break-word"></p></td></tr></table>`;
 
 「くもん」といえば学習塾のイメージですが、幼児向け知育グッズも充実しています。カード・パズル・ドリルなどラインナップが豊富で「何を選べばいい？」と迷いがちなシリーズ。実際に使ってわかったおすすめの選び方をお伝えします。
 
@@ -90,14 +93,7 @@ import AffiliateCTA from '../../components/AffiliateCTA.astro';
 
 ---
 
-<AffiliateCTA
-  title="くもん 幼児グッズの価格を確認する"
-  links={{
-    amazon: { url: "https://www.amazon.co.jp/s?k=%E3%81%8F%E3%82%82%E3%82%93+%E3%82%AB%E3%83%BC%E3%83%89+%E5%B9%BC%E5%85%90", label: "Amazon" },
-    rakuten: { url: "https://search.rakuten.co.jp/search/mall/%E3%81%8F%E3%82%82%E3%82%93+%E3%82%AB%E3%83%BC%E3%83%89+%E5%B9%BC%E5%85%90/", label: "楽天市場" },
-  }}
-  note="入学前の準備にも◎ シリーズで揃えると統一感が出ます"
-/>
+<RakutenWidget html={rakutenHtml} />
 
 ---
 
